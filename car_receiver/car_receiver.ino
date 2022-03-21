@@ -98,7 +98,7 @@ void setup() {
   if (debug)
     Serial.begin(115200);
 
-  dcMotor.attach(5); // attaches the servo on pin 9 to the servo object
+  dcMotor.attach(DC_MOTOR); // attaches the servo on pin 9 to the servo object
 
   if (debug)
     Serial.println("Zero Throttle");
@@ -110,14 +110,15 @@ void setup() {
 
   if (debug)
     printf_begin();
-  rcServo.attach(6);
+
+  rcServo.attach(RC_SERVO);
 
   /**
      TX
   */
   radioTx.begin();
   radioTx.setPALevel(RF24_PA_LOW);  // RF24_PA_MAX is default.
-  radioTx.setChannel(110);
+  radioTx.setChannel(TX_CHANNEL);
   radioTx.setDataRate(RF24_250KBPS);
   radioTx.setPayloadSize(sizeof(dataTx)); // float datatype occupies 4 bytes
   //  radioTx.setAutoAck(false);
@@ -132,7 +133,7 @@ void setup() {
   */
   radioRx.begin();
   radioRx.setPALevel(RF24_PA_LOW);
-  radioRx.setChannel(108);
+  radioRx.setChannel(RX_CHANNEL);
   radioRx.setDataRate(RF24_250KBPS);
   radioRx.setPayloadSize(sizeof(data));
   radioRx.openReadingPipe(1, address[0]);
@@ -257,13 +258,15 @@ void loop() {
 void dcMove(package data) {
   int dcMoveVal;
   // Default Value
-  dcMoveVal = 90;
+  dcMoveVal = zeroThrottle;
 
   if (data.j1u > 2) {
-    dcMoveVal = map(data.j1u, 0, 255, 90, 120);
+    dcMoveVal = map(data.j1u, 0, 255, zeroThrottle, maxThrottle);
   }
   if (data.j1d > 2) {
-    dcMoveVal = 60;
+
+    dcMotor.write(zeroThrottle);
+    dcMoveVal = minThrottle;
   }
 
   if (debug) {

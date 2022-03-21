@@ -7,10 +7,15 @@ int minThrottle = 60;  //60 This represents the "reverse" speed.
 //nRF24L01
 #define TX_CE 10
 #define TX_CSN 9
+#define TX_CHANNEL 105
 
 #define RX_CE 8
 #define RX_CSN 7
+#define RX_CHANNEL 106
 
 uint8_t address[][6] = {"A1", "B1", "A2", "B2"};
 
 bool debug = false;
+
+#define RC_SERVO 6
+#define DC_MOTOR 5
