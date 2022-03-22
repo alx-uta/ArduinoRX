@@ -16,6 +16,10 @@ int minThrottle = 60;  //60 This represents the "reverse" speed.
 uint8_t address[][6] = {"A1", "B1", "A2", "B2"};
 
 bool debug = false;
+int currentGear = 1;
+int lastGearUpChangeState = 1;
+int lastGearDownChangeState = 1;
 
 #define RC_SERVO 6
 #define DC_MOTOR 5
+#define VOLTAGE_PIN A4

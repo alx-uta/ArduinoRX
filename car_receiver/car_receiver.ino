@@ -87,14 +87,15 @@ package data;
 
 // Store the current values
 struct packageTx {
-  byte voltage;
-  byte voltage_2;
+  float voltage;
 };
 
 // Create a variable with the above structure
 packageTx dataTx;
 
 void setup() {
+  pinMode(VOLTAGE_PIN, INPUT_PULLUP);
+
   if (debug)
     Serial.begin(115200);
 
@@ -146,7 +147,6 @@ void setup() {
   defaultData();
 }
 void loop() {
-
   /**
      If radioTx.available() read the data
   */
@@ -246,11 +246,58 @@ void loop() {
       Serial.println();
     }
 
+    // Gear - UP
+    if (lastGearUpChangeState != data.b2 and data.b2 != 1) {
+      if (currentGear < 5) {
+        currentGear++;
+      }
+      lastGearUpChangeState = data.b2;
+    }
+    if (data.b2 == 1 ) {
+      lastGearUpChangeState = data.b2;
+    }
+
+    // Gear - Down
+    if (lastGearDownChangeState != data.b1 and data.b1 != 1) {
+      if (currentGear > 1) {
+        currentGear = currentGear - 1;
+      }
+      lastGearDownChangeState = data.b1;
+    }
+    if (data.b1 == 1 ) {
+      lastGearDownChangeState = data.b1;
+    }
+
+    // Set the speed based on the gear
+    switch (currentGear) {
+      case 1:
+        maxThrottle = 103;
+        break;
+      case 2:
+        maxThrottle = 108;
+        break;
+      case 3:
+        maxThrottle = 115;
+        break;
+      case 4:
+        maxThrottle = 120;
+        break;
+      default:
+        maxThrottle = 140;
+        break;
+    }
+
+    // Reset everything
+    if (data.s1 == 1) {
+      currentGear = 1;
+      maxThrottle = 140;
+    }
+
     servoMove(data);
     dcMove(data);
   }
 
-  dataTx.voltage = 2.3; //TODO
+  dataTx.voltage = analogRead(VOLTAGE_PIN) * (4.9 / 1023.00);
   radioTx.write(&dataTx, sizeof(packageTx));
 }
 
@@ -267,17 +314,6 @@ void dcMove(package data) {
 
     dcMotor.write(zeroThrottle);
     dcMoveVal = minThrottle;
-  }
-
-  if (debug) {
-    Serial.print("DC:");
-    Serial.print(data.j1u);
-    Serial.print("-");
-    Serial.print(data.j1d);
-    Serial.print(":");
-    Serial.print(dcMoveVal);
-
-    Serial.println();
   }
 
   dcMotor.write(dcMoveVal);
